@@ -81,6 +81,8 @@ func (s *ServerPool) GetNextPeer() *Backend {
 	return nil
 }
 
+var serverPool ServerPool
+
 func isBackendAlive(u *url.URL) bool {
 	timeout := 2 * time.Second
 	conn, err := net.DialTimeout("tcp", u.Host, timeout)
@@ -91,4 +93,17 @@ func isBackendAlive(u *url.URL) bool {
 	}
 	defer conn.Close()
 	return true
+}
+
+func healthCheck() {
+	t := time.Tick(time.Minute * 2)
+	for range t {
+		log.Println("Starting Health Check .....")
+		serverPool.HealthCheck()
+		log.Println("Health Check Completed!")
+	}
+}
+
+func main() {
+	go healthCheck()
 }
