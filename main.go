@@ -3,11 +3,17 @@ package main
 import (
 	"log"
 	"net"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"sync"
 	"sync/atomic"
 	"time"
+)
+
+const (
+	Attempts int = iota
+	Retry
 )
 
 type Backend struct {
@@ -102,6 +108,20 @@ func healthCheck() {
 		serverPool.HealthCheck()
 		log.Println("Health Check Completed!")
 	}
+}
+
+func GetAttemptsFromContext(r *http.Request) int {
+	if attemps, ok := r.Context().Value(Attempts).(int); ok {
+		return attemps
+	}
+	return 1
+}
+
+func GetRetryFromContext(r *http.Request) int {
+	if retry, ok := r.Context().Value(Retry).(int); ok {
+		return retry
+	}
+	return 0
 }
 
 func main() {
